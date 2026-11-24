@@ -402,7 +402,7 @@ export default function App() {
 
   // ── Campaign Table ───────────────────────────────────────────────────────────
   const CampaignTable = ({ showRetry = false }: { showRetry?: boolean }) => (
-    <div className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden">
+    <div className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-x-auto">
       {loading
         ? <div className="flex items-center justify-center py-20 text-slate-400 gap-3"><RefreshCw size={18} className="animate-spin" /> Loading…</div>
         : filtered.length === 0
@@ -589,7 +589,7 @@ export default function App() {
   // ── Senders Page ─────────────────────────────────────────────────────────────
   const SendersPage = () => (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden">
+      <div className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-x-auto">
         {senders.length === 0
           ? <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <Users size={40} className="mb-3 opacity-20" />
