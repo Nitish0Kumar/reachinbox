@@ -163,6 +163,122 @@ Browser → React (Vite)
 
 ---
 
+## 🌐 Deployment Guide
+
+### Option A — Railway (Recommended, Free Tier)
+
+Railway hosts your backend + PostgreSQL + Redis all in one place. Frontend goes on Vercel.
+
+#### Step 1 — Deploy Backend on Railway
+
+1. Go to **[railway.app](https://railway.app)** → sign in with GitHub
+2. Click **New Project → Deploy from GitHub repo** → select `reachinbox`
+3. Choose the **`backend`** folder as root
+4. Railway auto-detects Node.js and runs `npm run build && npm start`
+5. Add these environment variables in Railway dashboard (Settings → Variables):
+
+```env
+DATABASE_URL=<auto-filled by Railway PostgreSQL plugin>
+REDIS_URL=<auto-filled by Railway Redis plugin>
+PORT=5001
+SESSION_SECRET=some-random-secret-string
+ADMIN_TOKEN=reachinbox-admin
+NODE_ENV=production
+```
+
+6. Click **+ New** → **Database → PostgreSQL** → Railway links it automatically
+7. Click **+ New** → **Database → Redis** → Railway links it automatically
+8. After deploy, copy your backend URL e.g. `https://reachinbox-backend.up.railway.app`
+9. Apply DB schema once:
+   ```bash
+   # In Railway dashboard → PostgreSQL → Connect → open shell, then:
+   psql $DATABASE_URL < backend/src/config/schema.sql
+   ```
+
+#### Step 2 — Deploy Frontend on Vercel
+
+1. Go to **[vercel.com](https://vercel.com)** → New Project → Import `reachinbox` from GitHub
+2. Set **Root Directory** to `frontend`
+3. Add environment variable:
+   ```env
+   VITE_API_URL=https://your-railway-backend-url.up.railway.app
+   ```
+4. Click **Deploy** → Vercel builds and hosts at `https://reachinbox.vercel.app`
+
+> [!IMPORTANT]
+> After getting your Vercel URL, go back to Railway backend variables and add:
+> ```
+> FRONTEND_URL=https://reachinbox.vercel.app
+> ```
+> Then redeploy backend so CORS allows your Vercel domain.
+
+---
+
+### Option B — Render (Alternative Free Hosting)
+
+| Service | Platform | Plan |
+|---|---|---|
+| Backend (Node.js) | [render.com](https://render.com) → Web Service | Free |
+| PostgreSQL | Render → PostgreSQL | Free (90 days) |
+| Redis | [Upstash](https://upstash.com) | Free (10k req/day) |
+| Frontend | [Vercel](https://vercel.com) | Free |
+
+**Backend `render.yaml`** (place in `/backend`):
+```yaml
+services:
+  - type: web
+    name: reachinbox-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reachinbox-db
+          property: connectionString
+databases:
+  - name: reachinbox-db
+    plan: free
+```
+
+---
+
+### Option C — VPS / Local Server (Full Control)
+
+```bash
+# On your server (Ubuntu):
+git clone https://github.com/Nitish0Kumar/reachinbox.git
+cd reachinbox
+
+# Start PostgreSQL + Redis
+docker compose up -d   # or use docker run commands from Quick Start
+
+# Backend
+cd backend && cp .env.example .env  # fill real values
+npm install && npm run build
+npm start  # runs on port 5001
+
+# Frontend (build static files)
+cd ../frontend && npm install
+npm run build  # outputs to dist/
+# Serve dist/ with nginx or: npx serve dist
+```
+
+---
+
+### 🔧 Frontend API URL Config
+
+In `frontend/src/api.ts`, the base URL defaults to `http://localhost:5001`.  
+For production, set the `VITE_API_URL` env var before building:
+
+```bash
+VITE_API_URL=https://your-backend.up.railway.app npm run build
+```
+
+---
+
 ## 📸 Screenshots
 
 > _Add screenshots of the dashboard, campaign creation modal, and Bull Board here._
